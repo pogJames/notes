@@ -37,7 +37,7 @@ Why?
 
 nice.
 
-### Install VSCode and GIT
+### Install VSCode
 ...
 
 ### Install extension pack
@@ -61,4 +61,36 @@ When running the WSL extension, selecting the 'Extensions' tab will display a li
 
 <img width="586" height="320" alt="image" src="https://github.com/user-attachments/assets/5b5c01bb-5890-4942-a5ea-517a28572327" />
 
-## 3. Try Github
+## 3. Git Setup
+Git is the most commonly used version control system. With Git, you can track changes you make to files, so you have a record of what has been done, and have the ability to revert to earlier versions of the files if needed. Git also makes collaboration easier, allowing changes by multiple people to all be merged into one source
+
+### Installing Git
+```bash
+sudo apt-get install git
+```
+
+### Git config file setup
+```bash
+git config --global user.email "youremail@domain.com"
+git config --global user.name "Your Name"
+```
+Do I need this? https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-git#git-credential-manager-setup
+
+### Commands to check and set up GCM for WSL
+```bash
+git --version; git credential-manager --version
+```
+
+### Additional configuration for Azure
+```bash
+git config --global credential.https://dev.azure.com.useHttpPath true
+```
+
+### Adding a Git Ignore file (Optional)
+1. Open Git Bash.
+2. Navigate to the location of your Git repository.
+3. Create a .gitignore file for your repository.
+   
+[Some common .gitignore configurations](https://gist.github.com/octocat/9257657)
+
+## 4. Docker Setup

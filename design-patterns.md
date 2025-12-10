@@ -1,55 +1,65 @@
 # CREATIONAL PATTERNS
 
 ## Singleton
+
 ### Problem
-Ensures a class has only one instance (e.g., to manage shared resources like a database connection or configuration settings) while providing global access to it
-> Without it, multiple instances could lead to inconsistencies or resource waste...\
+Ensures a class has only one instance (e.g., to manage shared resources like a database connection or configuration settings) while providing global access to it  
+> Without it, multiple instances could lead to inconsistencies or resource waste...  
 > Like a government, A country can have only one official government and everybody must talk to the same one
 
 ### Solution
-The class controls its own instantiation: 
-- a private constructor
-- a static variable to hold the single instance
-- a static method to `get` the instance (creating it if needed)
+The class controls its own instantiation:  
+- a private constructor  
+- a static variable to hold the single instance  
+- a static method to `get` the instance (creating it if needed)  
 > Thread-safety is often added for concurrent environments
 
 ### Structure
-|Singleton|
-|:---|
-|- instance: Singleton|
-|- Singleton()|
-|+ getInstance(): Singleton|
+|Singleton|  
+|:---|  
+|- instance: Singleton|  
+|- Singleton()|  
+|+ getInstance(): Singleton|  
 ```bash
-# getInstance()
-if (instance == null) {
-   instance = new Singleton()
-}
-return instance
+# getInstance()  
+if (instance == null) {  
+   instance = new Singleton()  
+}  
+return instance  
 ```
 
 ### Code Examples
+
 #### Python
 ```python
-class ModbusMaster:
+class Config:
     _instance = None
     
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            # init serial port, etc.
+            cls._instance.debug = False
+            cls._instance.name = "app"
         return cls._instance
+
+# Usage
+cfg1 = Config()
+cfg2 = Config()
+cfg1.debug = True
+print(cfg2.debug)  # True - same instance
 ```
+
 #### Rust
 ```rust
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
-static CONFIG: Lazy<Mutex<AppConfig>> = Lazy::new(|| {
-    Mutex::new(AppConfig { debug: false, name: "gateway".into() })
+static CONFIG: Lazy<Mutex<Config>> = Lazy::new(|| {
+    Mutex::new(Config { debug: false, name: "gateway".into() })
 });
 
 #[derive(Debug)]
-struct AppConfig {
+struct Config {
     debug: bool,
     name: String,
 }
@@ -61,35 +71,43 @@ cfg.debug = true;
 
 ### Usage
 **General**
-- Global logger database
+- Global logger
 - Configuration manager
-  
+
 **Technical**
 - One Modbus Master per process
 - Shared MQTT client or cloud connection pool
+- Global device registry
 
 ---
 
 ## Builder
 
 ### Problem
-Object has many optional parameters - telescoping constructors or long argument lists - hard to read and error-prone
+Constructing a complex object step by step. The classic constructor does not allow to construct different representations of the same class.  
+> Without it, you'd have telescoping constructors (many overloads with different param combinations) or setters that allow invalid states during construction.  
+> Like building a house: you need to add walls, roof, doors step-by-step, and different builders can make different styles (modern vs traditional) from the same process.
 
 ### Solution
-Separate construction with a fluent builder - chainable methods - final `build()` - immutable result
+Separate the construction of a complex object from its representation:  
+- A Builder interface with methods for each part (e.g., add_part_a(), add_part_b())  
+- Concrete Builders implement the interface for specific variations  
+- A Director (optional) to orchestrate the building steps for common recipes  
+- The final build() returns the product  
+> Allows fluent chaining, immutable products, and reuse of construction logic for different types.
 
 ### Structure
-| Builder |
-|:---|
-| + with_xxx() |
-| + build() |
+| Builder | ConcreteBuilder | Director | Product |
+|:---|:---|:---|:---|
+| + build_part_a() | - product | - builder | - part_a |
+| + build_part_b() | + build_part_a() | + construct() | - part_b |
+| + get_result() | + build_part_b() | | |
 
 ```bash
-obj = Builder()
-        .host("192.168.1.10")
-        .port(502)
-        .timeout(1000)
-        .build()
+# construct()
+builder.build_part_a()
+builder.build_part_b()
+return builder.get_result()
 ```
 
 ### Code Examples
@@ -159,19 +177,28 @@ let req = RequestBuilder::new()
 ## Prototype
 
 ### Problem
-Creating similar objects from scratch is expensive (config parsing, heavy init)
+Creating an object is expensive or complex (e.g., involves database queries, file loading, or heavy computations), and you need many similar objects with minor variations.  
+> Without it, you'd repeat the costly creation process each time, leading to performance issues or code duplication.  
+> Like photocopying a form: instead of filling a new blank form from scratch every time, copy a pre-filled template and just change the name/date.
 
 ### Solution
-Clone an existing fully-configured object (prototype) and modify only what differs
+Specify the kinds of objects to create using a prototypical instance, and create new objects by copying this prototype:  
+- Implement a clone() method that performs a deep copy of the object state  
+- Clients clone the prototype and customize the clone as needed  
+- Often uses a registry of prototypes for easy access by type  
+> Avoids subclasses for variations and reduces initialization overhead.
 
 ### Structure
 | Prototype |
 |:---|
-| + clone() |
+| + clone(): Prototype |
+| - state |
 
 ```bash
-new_obj = template.clone()
-new_obj.id = 42
+# usage
+prototype = load_expensive_template()
+new_obj = prototype.clone()
+new_obj.modify_specific_fields()
 ```
 
 ### Code Examples
@@ -230,18 +257,27 @@ let dev2 = template.clone();
 ## Factory Method
 
 ### Problem
-You know you need an object, but exact type depends on subclass or config
+A class cannot anticipate the class of objects it must create, or subclasses may need to specify the objects they create, to keep code flexible and extensible.  
+> Without it, you'd hardcode concrete classes, violating open-closed principle and making changes difficult (e.g., swapping implementations requires editing client code).  
+> Like a car factory: the base factory defines how to assemble a car, but subclasses decide if it's a sedan, SUV, or truck.
 
 ### Solution
-Define creation method in base class - let subclasses decide concrete type
+Define an interface for creating an object, but let subclasses decide which class to instantiate:  
+- Creator class declares the factory_method() that returns a Product interface  
+- ConcreteCreators override factory_method() to return specific ConcreteProducts  
+- Clients use the Creator without knowing the concrete types  
+> Promotes loose coupling and parallel class hierarchies (creators and products).
 
 ### Structure
-| Creator |
-|:---|
-| + factory_method() |
+| Creator | ConcreteCreator | Product | ConcreteProduct |
+|:---|:---|:---|:---|
+| + factory_method(): Product | + factory_method(): Product | + operation() | + operation() |
 
 ```bash
+# usage
+creator = ConcreteCreator()
 product = creator.factory_method()
+product.operation()
 ```
 
 ### Code Examples
@@ -309,21 +345,28 @@ impl Application for ProdApp { fn logger(&self) -> Box<dyn Logger> { Box::new(Fi
 ## Abstract Factory
 
 ### Problem
-Need families of related objects that must work together (e.g. UI components, device drivers)
+System needs to create families of related or dependent objects without specifying their concrete classes, to ensure compatibility across products.  
+> Without it, client code would mix concrete classes from different families, leading to inconsistencies (e.g., Windows buttons with Mac checkboxes in a UI).  
+> Like a furniture store: one factory for Victorian style (chair + table + sofa), another for Modern style, ensuring all pieces match.
 
 ### Solution
-Factory interface that creates entire product families - concrete factories per family
+Provide an interface for creating families of related objects:  
+- AbstractFactory declares methods for each product type (create_product_a(), create_product_b())  
+- ConcreteFactories implement the methods to produce compatible ConcreteProducts  
+- Clients use the AbstractFactory interface, configurable at runtime  
+> Isolates concrete classes and allows swapping entire product families easily.
 
 ### Structure
-| AbstractFactory |
-|:---|
-| + create_product_a() |
-| + create_product_b() |
+| AbstractFactory | ConcreteFactory | AbstractProductA | ConcreteProductA1 | AbstractProductB | ConcreteProductB1 |
+|:---|:---|:---|:---|:---|:---|
+| + create_a(): AbstractProductA | + create_a(): AbstractProductA | + method_a() | + method_a() | + method_b() | + method_b() |
+| + create_b(): AbstractProductB | + create_b(): AbstractProductB | | | | |
 
 ```bash
-factory = WindowsFactory()
-button = factory.create_button()
-checkbox = factory.create_checkbox()
+# usage
+factory = ConcreteFactory()
+product_a = factory.create_a()
+product_b = factory.create_b()
 ```
 
 ### Code Examples

@@ -78,7 +78,7 @@ println!("{}", db2.lock().unwrap().host);  // "192.168.1.100"
 ### Usage 
 **General** 
 - Global logger
-- Configuration manager
+- Configuration manager\
 **Technical**
 - One Modbus Master per process
 - Shared MQTT client or cloud connection pool

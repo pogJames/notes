@@ -166,14 +166,14 @@ let data = source.read();
 
 ### Usage
 **General:**
-- Payment processing where type depends on user choice at checkout
-- Document export when format is selected by user
-- Notification delivery based on user preferences
+- Payment processing systems
+- Document exporters
+- Notification delivery
 
 **IoT:**
-- Sensor drivers where hardware type is determined by configuration file
-- Communication protocols selected at runtime based on network availability
-- Data formatters chosen by the receiving system's requirements
+- Sensor driver selection
+- Protocol switching at runtime
+- Data formatter selection
 
 ---
 
@@ -286,14 +286,14 @@ let checkbox = factory.create_checkbox();
 
 ### Usage
 **General:**
-- UI themes where all components must match visual style
-- Cross-platform apps where widgets adapt to the operating system
-- Database access where connection, commands, and transactions belong to the same vendor
+- UI theme components
+- Cross-platform widget sets
+- Database driver families
 
 **IoT:**
-- Modbus RTU vs TCP families ensuring client and server use matching protocol
-- Cloud service sets where storage and messaging come from one provider
-- Sensor ecosystems where reader, calibrator, and logger work with the same data format
+- Modbus RTU vs TCP protocol stacks
+- Cloud provider service sets
+- Sensor ecosystem components
 
 ---
 
@@ -411,14 +411,14 @@ let request = HttpRequestBuilder::new()
 
 ### Usage
 **General:**
-- Complex configuration objects avoiding constructors with many parameters
-- Query building where clauses are added conditionally
-- Test data creation with only relevant fields set
+- Complex configuration objects
+- SQL query builders
+- Test data creation
 
 **IoT:**
-- Modbus connection setup defining slave ID, baud rate, timeout, and retry logic
-- Sensor configuration setting pin, threshold, sampling rate, and calibration values
-- MQTT client builder specifying broker, credentials, QoS, and keepalive settings
+- Modbus connection configuration
+- Sensor setup and calibration
+- MQTT client initialization
 
 ---
 
@@ -501,14 +501,14 @@ println!("{}", sensor1.calibration.len());  // 4
 
 ### Usage
 **General:**
-- Game character creation by copying templates and customizing attributes
-- Document generation from templates with specific data filled in
-- Test fixtures where base objects are cloned for each test
+- Game character templates
+- Document templates
+- Test fixture cloning
 
 **IoT:**
-- Multiple sensor configurations starting from one base setup
-- Modbus register maps copied and modified for different slave devices
-- Network packet templates cloned for batch transmission with varying payloads
+- Sensor configuration templates
+- Modbus register map copying
+- Network packet templates
 
 ---
 

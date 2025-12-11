@@ -1321,3 +1321,4 @@ println!("{}", proxy.read());
 | **Facade** | Simplify complex subsystem | Easier API |
 | **Flyweight** | Share common data efficiently | Memory optimization |
 | **Proxy** | Control access to objects | Lazy loading, access control |
+

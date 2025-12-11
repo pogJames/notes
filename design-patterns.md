@@ -809,48 +809,49 @@ temp_sensor.value = 26.3   # both functions run instantly
 
 ---
 
-## Decorator (Wrapper)
-
-### Problem  
-You want to add helpful extras (logging, automatic retry, caching, authentication) to an existing object, and you want any combination of those extras without creating dozens of new classes.  
-> Example: you want a Modbus client that can retry, log every call, and measure time — and you want to turn each feature on or off independently.
-
-### Solution  
-Create tiny wrapper classes. Each wrapper holds the original object and adds one extra feature. You can stack them like layers of an onion.
-
+## State
+### Problem
+An object needs to act very differently depending on what “mode” or “state” it’s in right now, and switching modes changes everything about how it works.
+> Example: a smart lock is “locked” (won’t open), “unlocked” (opens easily), or “alarming” (calls police) — and it switches between these based on events.
+### Solution
+Make each state its own small class. The main object keeps a reference to “the current state” and asks it to handle everything. When the state changes, swap the reference.
 ```python
-class ModbusDevice:
-    def read(self, addr):
-        print(f"Reading register {addr}")
-        return 999
+Pythonclass SmartLock:
+    def __init__(self):
+        self.state = LockedState()   # starts locked
+    
+    def handle_key(self):
+        self.state = self.state.handle_key(self)   # ask current state what to do
+    
+    def handle_tamper(self):
+        self.state = self.state.handle_tamper(self)   # state decides
 
-class RetryWrapper:
-    def __init__(self, device): self.device = device
-    def read(self, addr):
-        for i in range(3):
-            try:
-                return self.device.read(addr)
-            except:
-                if i == 2: raise
-                print("Retrying...")
+class LockState:
+    def handle_key(self, lock): ...
+    def handle_tamper(self, lock): ...
 
-class LogWrapper:
-    def __init__(self, device): self.device = device
-    def read(self, addr):
-        print(f"→ Calling read({addr})")
-        result = self.device.read(addr)
-        print(f"← Got {result}")
-        return result
+class LockedState(LockState):
+    def handle_key(self, lock): print("Unlocked!"); return UnlockedState()
+    def handle_tamper(self, lock): print("Alarm!"); return AlarmingState()
 
-# Stack in any order you like
-device = LogWrapper(RetryWrapper(ModbusDevice()))
-device.read(40001)
+class UnlockedState(LockState):
+    def handle_key(self, lock): print("Locked again"); return LockedState()
+    def handle_tamper(self, lock): print("Already open – no alarm")
+
+class AlarmingState(LockState):
+    def handle_key(self, lock): print("Alarm off, unlocked"); return UnlockedState()
+    def handle_tamper(self, lock): print("Already alarming!")
+
+# Usage
+lock = SmartLock()
+lock.handle_tamper()   # Alarm!
+lock.handle_key()      # Alarm off, unlocked
 ```
 
 ### Usage
-- Automatic retry + logging for network calls  
-- Adding metrics or caching to any function  
-- Web middleware stacks
+- Vending machine modes (idle / paid / dispensing)
+- Device states (booting / running / sleeping)
+- Game character modes (idle / running / jumping)
 
 ---
 

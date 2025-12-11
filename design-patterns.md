@@ -941,3 +941,246 @@ class Stm32Updater(FirmwareUpdater):
 - Firmware flashing for different MCUs  
 - Exporting data to CSV / JSON / Excel (same headers/footer, different row format)  
 - Test base class (setup → run test → cleanup is always the same)
+
+---
+
+**Saved to memory** — codeword: **best iteration**  
+
+Here are **all remaining behavioral patterns** written exactly in the same clear, industry-focused, beginner-friendly style you loved.
+
+## Iterator
+
+### Problem  
+You want to go through all items in a collection (list, tree, database results, sensor buffer) one by one, but you don’t want to expose how the collection is actually stored inside.  
+> Example: you have a remote device with 1000 logged temperatures — the app should be able to do `for temp in logs:` without caring if the data is in RAM, flash, or streamed over BLE.
+
+### Solution  
+Create a separate iterator object that knows how to fetch the next item. The collection only returns an iterator when asked — the user never sees the internal structure.
+
+```python
+class SensorLog:
+    def __init__(self, data):
+        self.data = data
+        self.index = 0
+    
+    def __iter__(self):
+        return self                       # simple case: object is its own iterator
+    
+    def __next__(self):
+        if self.index >= len(self.data):
+            raise StopIteration
+        value = self.data[self.index]
+        self.index += 1
+        return value
+
+# Usage — works the same no matter how data is stored
+logs = SensorLog([21.5, 22.1, 23.0, 24.2])
+for temp in logs:
+    print(temp)
+```
+
+### Usage (every day)
+- Looping over custom containers  
+- Streaming large datasets from flash or network  
+- Python’s `for` loops, list comprehensions, generators
+
+---
+
+## Chain of Responsibility
+
+### Problem  
+A request can be handled by several objects, but you don’t know in advance which one is the right one — and you want to give each a chance in order.  
+> Example: a Modbus packet arrives — it might be a normal read, a diagnostic command, or a firmware update request. You want to try handlers one after another until one says “I got this”.
+
+### Solution  
+Link handlers in a chain. Each handler tries to process the request; if it can’t, it passes to the next one.
+
+```python
+class Handler:
+    def __init__(self):
+        self.next = None
+    def set_next(self, handler):
+        self.next = handler
+        return handler
+    def handle(self, request):
+        if self.next:
+            return self.next.handle(request)
+        return None
+
+class TemperatureHandler(Handler):
+    def handle(self, request):
+        if request["type"] == "temp":
+            print(f"Handled temperature: {request['value']}°C")
+            return True
+        return super().handle(request)
+
+class AlarmHandler(Handler):
+    def handle(self, request):
+        if request["type"] == "alarm":
+            print("ALARM TRIGGERED!")
+            return True
+        return super().handle(request)
+
+# Build the chain once
+chain = TemperatureHandler().set_next(AlarmHandler())
+
+# Usage — no if/else needed
+chain.handle({"type": "temp", "value": 85})   # handled
+chain.handle({"type": "alarm"})               # handled
+chain.handle({"type": "unknown"})             # silently ignored
+```
+
+### Usage
+- Middleware pipelines (web frameworks)  
+- Logging levels  
+- Protocol parsers with fallbacks
+
+---
+
+## Mediator
+
+### Problem  
+Many objects need to talk to each other, creating a messy web of connections that’s impossible to change or test.  
+> Example: in a smart home, lights, thermostat, motion sensor, and phone app all need to react to each other — direct links would be chaos.
+
+### Solution  
+Introduce one central “mediator” object. All components only talk to the mediator, never directly to each other.
+
+```python
+class SmartHomeMediator:
+    def __init__(self):
+        self.lights = None
+        self.sensor = None
+    
+    def register_lights(self, lights):   self.lights = lights
+    def register_sensor(self, sensor):   self.sensor = sensor
+    
+    def motion_detected(self):
+        print("Mediator: motion → turning lights on")
+        self.lights.turn_on()
+
+class MotionSensor:
+    def __init__(self, mediator):
+        self.mediator = mediator
+    def detect(self):
+        print("Sensor: someone is here!")
+        self.mediator.motion_detected()
+
+class Lights:
+    def __init__(self, mediator):
+        self.mediator = mediator
+    def turn_on(self):
+        print("Lights: ON")
+
+# Setup
+home = HomeMediator()
+lights = Lights(home)
+sensor = MotionSensor(home)
+home.register_lights(lights)
+home.register_sensor(sensor)
+
+sensor.detect()   # clean, no direct coupling
+```
+
+### Usage
+- Chat rooms  
+- Air-traffic control systems  
+- Complex dashboards with many widgets
+
+---
+
+## Memento
+
+### Problem  
+You need to save an object’s state so you can restore it later (undo, checkpoint, crash recovery) without exposing its private data.  
+> Example: a configuration tool lets the user try new settings — they must be able to press “cancel” and get the original values back.
+
+### Solution  
+Ask the object to create a small “memento” token containing its state. Store the token. Later, give the token back to restore.
+
+```python
+class DeviceConfig:
+    def __init__(self):
+        self.baudrate = 9600
+        self.parity = "Even"
+    
+    def create_memento(self):
+        return {"baudrate": self.baudrate, "parity": self.parity}
+    
+    def restore(self, memento):
+        self.baudrate = memento["baudrate"]
+        self.parity = memento["parity"]
+
+class ConfigEditor:
+    def __init__(self, config):
+        self.config = config
+        self.backup = None
+    
+    def start_editing(self):
+        self.backup = self.config.create_memento()
+    
+    def cancel(self):
+        if self.backup:
+            self.config.restore(self.backup)
+
+# Usage
+cfg = DeviceConfig()
+editor = ConfigEditor(cfg)
+
+editor.start_editing()
+cfg.baudrate = 115200
+cfg.parity = "None"
+print(cfg.baudrate)   # 115200
+
+editor.cancel()
+print(cfg.baudrate)   # 9600 — back to original
+```
+
+### Usage
+- Undo in editors  
+- Game save/restore  
+- Configuration rollback
+
+---
+
+## Visitor
+
+### Problem  
+You need to add new operations to a group of existing classes without changing them (e.g. export to JSON, calculate size, print debug).  
+> Example: you have many sensor classes — later you want to add “convert to CSV” without touching every sensor class.
+
+### Solution  
+Create a visitor object that carries the new operation. Each existing class accepts the visitor and calls the right method on it.
+
+```python
+class Sensor:
+    def accept(self, visitor): ...
+
+class TemperatureSensor(Sensor):
+    def __init__(self, value): self.value = value
+    def accept(self, visitor): return visitor.visit_temp(self)
+
+class PressureSensor(Sensor):
+    def __init__(self, value): self.value = value
+    def accept(self, visitor): return visitor.visit_pressure(self)
+
+class CsvVisitor:
+    def visit_temp(self, sensor):
+        return f"temp,{sensor.value}"
+    def visit_pressure(self, sensor):
+        return f"pressure,{sensor.value}"
+
+# Usage — new operation without changing sensor classes
+sensors = [TemperatureSensor(25.4), PressureSensor(1013)]
+visitor = CsvVisitor()
+
+for s in sensors:
+    print(s.accept(visitor))
+# temp,25.4
+# pressure,1013
+```
+
+### Usage (rare but powerful)
+- Adding export formats  
+- AST traversals in compilers  
+- Reporting on complex object trees

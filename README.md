@@ -4,7 +4,7 @@
 2. Note down words you don't know
 3. Google those words
 4. Read tutorial again
-5. Ask AI to test you
+5. Try to explain
 6. Make a real project
 7. Make documentation
 8. Able to explain everything

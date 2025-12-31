@@ -71,6 +71,9 @@
 - Mobile Apps: offline data sync in iOS
 When to choose: Low concurrency, no network, small data, zero setup\
 Useful Features: PRAGMA, VACUUM, ATTACH, FTS5 EXTENSION, In-Memory
+```
+DATABASE_URL = "sqlite:///./app.db"  # Creates app.db file in current folder
+```
 
 ### PostgreSQL
 1. Architecture: client-server
@@ -83,7 +86,20 @@ Useful Features: PRAGMA, VACUUM, ATTACH, FTS5 EXTENSION, In-Memory
 - Scalable Systems: GIS (Geographic Information System), JSONB for semi-structured data
 When to choose: High traffic, multiple users, advances features like replication, extensions\
 Useful Features: Extensions (pgcrypto, PostGIS, JSONB), Row-Level Security, Truggers/Functions, Partitioning, Replication
+```
+# 1. Copy boilerplate
+cp -r my-boilerplate new-crm-project
 
+# 2. Update .env with new project settings
+# 3. Add your models to backend/app/models.py
+# 4. Add your routes to backend/app/api/routes/
+# 5. Run migrations
+docker compose exec backend alembic revision --autogenerate -m "add customer table"
+docker compose exec backend alembic upgrade head
+
+# 6. Done
+docker compose up
+```
 ## Practice
 ```sql
 SQLCREATE TABLE authors (

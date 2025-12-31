@@ -99,6 +99,9 @@ docker compose exec backend alembic upgrade head
 
 # 6. Done
 docker compose up
+
+# Connect to the running PostgreSQL container
+docker compose exec db psql -U postgres -d app
 ```
 ## Practice
 ```sql

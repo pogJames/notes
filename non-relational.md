@@ -18,6 +18,12 @@
 3. Data Model Alignment
 > Store data the way your application uses it. If your React dashboard needs a sensor with its recent readings, store it that way—no joins required
 
+### Core Concepts You Must Know
+**CAP Theorem**: You can only guarantee two of three: Consistency, Availability, Partition tolerance. Relational databases prioritize consistency. Most NoSQL systems let you choose—often favoring availability and partition tolerance, accepting "eventual consistency."
+**Eventual Consistency**: After an update, given enough time with no new updates, all replicas will converge to the same value. For your temperature dashboard, showing a reading that's 100ms stale is usually fine.
+**Denormalization**: Instead of normalizing data across tables, you duplicate it to avoid joins. Store the sensor name with every reading, even though it's redundant. Disk is cheap; joins across distributed systems are expensive.
+**Sharding**: Data is split across machines by a shard key. Choose poorly (like sharding by sensor type when 90% are temperature sensors) and you get hot spots. Choose well (sensor_id) and load distributes evenly.
+
 ### MongoDB
 ```
 {
@@ -34,7 +40,23 @@
   ]
 }
 ```
-**Cheatsheet**
+
+### Redis
+```
+sensor:42:latest → {"temp": 23.5, "ts": "2025-01-15T10:05:00Z"}
+sensor:42:status → "online"
+alerts:pending → ["sensor_42", "sensor_17"]
+```
+
+### Others — Know it exists
+**Column-Family (Cassandra, HBase)**\
+- Optimized for write-heavy time-series data across massive clusters
+- Think Netflix tracking every play event, or industrial IoT with thousands of sensors.\
+**Graph Databases (Neo4j)**\
+- For highly connected data: social networks, recommendation engines, fraud detection\
+- Relationships are first-class citizens
+
+### Cheatsheet
 ```
 from pymongo import MongoClient
 
@@ -72,12 +94,6 @@ avg_by_location = sensors.aggregate([
         "avg_temp": {"$avg": "$readings.temp"}
     }}
 ])
-```
-### Redis
-```
-sensor:42:latest → {"temp": 23.5, "ts": "2025-01-15T10:05:00Z"}
-sensor:42:status → "online"
-alerts:pending → ["sensor_42", "sensor_17"]
 ```
 ```
 import redis
@@ -118,11 +134,3 @@ now = time.time()
 hour_ago = now - 3600
 recent = r.zrangebyscore("sensor:TH485_001:history", hour_ago, now)
 ```
-### Others — Know it exists
-**Column-Family (Cassandra, HBase)**\
-- Optimized for write-heavy time-series data across massive clusters
-- Think Netflix tracking every play event, or industrial IoT with thousands of sensors.\
-**Graph Databases (Neo4j)**\
-- For highly connected data: social networks, recommendation engines, fraud detection\
-- Relationships are first-class citizens
-

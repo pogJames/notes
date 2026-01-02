@@ -18,18 +18,18 @@ postgresql = database -> local or docker
 
 ### All Genesis
 **table schema**
-- **verses**: book_number, chapter, verse
-- **titles**: id, verses_id, name
-- **contents**: id, titles_id, page, data
+- **books**: books_id, number, chapter, verse
+- **titles**: titles_id, books_id, name
+- **contents**: contents_id, titles_id, page, data
 
 **flow**
-1. generate book, chapter, verse
-2. LOOP for every combination: A (book, chapter, verse)
-3. INSERT A into table VERSES
-4. POST HTTP request using A
-5. extract main HTML content
-6. parse HTML into tables
-7. LOOP for every titles: B
-8. INSERT B into table TITLES
-9. divide B into every page with its contents: C
-10. INSERT C into table CONTENTS
+1. CODE generate book, chapter, verse
+2. LOOP for every combination: (book, chapter, verse)
+3. POSTGRES insert (book, chapter, verse) -> table BOOKS `return verse_id`
+4. HTTP post request using (book, chapter, verse)
+5. HTML extract main content
+6. HTML parse into tables (title, page array, data array)
+8. POSTGRES insert titles + verse_id -> table TITLES `return titles_id`
+9. expand array'd cells into independent rows
+10. POSTGRES insert all rows + titles_id -> table CONTENTS
+> useful debugging tool using 2 nodes = RESET (delete all tables -> create all tables)

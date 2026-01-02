@@ -1,3 +1,6 @@
+## GraphQL
+**PROBLEM**
+
 ## InfluxDB
 **PROBLEM**
 ```
@@ -115,17 +118,6 @@ duckdb.sql("SELECT * FROM df WHERE amount > 1000")
 # Persist to a database file (like SQLite)
 con = duckdb.connect("my_analysis.db")
 con.sql("CREATE TABLE sales AS SELECT * FROM 'sales.csv'")
-```
-
-### Key Features
-```
-✓ Zero configuration (just pip install duckdb)
-✓ Reads CSV, Parquet, JSON directly (no ETL)
-✓ Columnar storage = fast aggregations
-✓ Vectorized execution = uses modern CPU features
-✓ Works with pandas, polars, Arrow seamlessly
-✓ Can query remote files (S3, HTTP)
-✓ Full SQL support (window functions, CTEs, etc.)
 ```
 **PERFORMANCE**
 ```python

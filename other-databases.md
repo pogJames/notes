@@ -73,6 +73,13 @@ You want to:
 - Without setting up a server
 - And it should be FAST
 ```
+### What DuckDB Actually Is
+**An embedded analytical database** - like SQLite, but optimized for analytics:
+> DuckDB's superpower is running **fast SQL** on local data without a server.
+```
+SQLite  → Row-based   → Good for: apps, CRUD, single row lookups
+DuckDB  → Column-based → Good for: aggregations, scans, analytics
+```
 ### ARCHITECTURE
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -135,4 +142,98 @@ result = duckdb.sql("""
 """).df()
 ```
 ## Polars
+**What**
+- Pandas replacement that's 10-50x faster. LMAO
+```
+Pandas  = DataFrame library (Python, single-threaded, eager)
+Polars  = DataFrame library (Rust, multi-threaded, lazy)
+```
+**When to use**
+- Data too big/slow for Pandas
+- You prefer Python method chaining over SQL
+**How to Use**
+```python
+import polars as pl
+
+# Read
+df = pl.scan_parquet("data.parquet")  # or scan_csv
+
+# Transform (chain operations)
+result = (
+    df
+    .filter(pl.col("year") == 2024)
+    .group_by("category")
+    .agg(pl.col("amount").sum())
+    .sort("amount", descending=True)
+    .collect()  # executes here
+)
+```
+The 5 Operations You'll Use 80% of the Time
+```python
+df.filter(pl.col("x") > 10)                    # WHERE
+df.select("col1", "col2")                       # SELECT columns
+df.with_columns((pl.col("x") * 2).alias("y"))  # Add/modify column
+df.group_by("cat").agg(pl.col("val").sum())    # GROUP BY
+df.sort("col", descending=True)                 # ORDER BY
+```
+
+### Polars vs DuckDB
+```
+Same speed. Pick by preference:
+
+Polars → df.filter(pl.col("x") > 10).select("a", "b")
+DuckDB → "SELECT a, b FROM df WHERE x > 10"
+
+Like Python chaining? → Polars
+Like SQL? → DuckDB
+```
+
 ## Parquet
+**What**
+> A file format (like CSV), but binary, columnar, and compressed.
+
+**Why it exists**
+```
+CSV:     10 GB file, query 2 columns → reads all 10 GB
+Parquet: 1 GB file,  query 2 columns → reads only those 2 columns
+```
+**When to use**
+- Storing analytical data (logs, exports, data lake)
+- Files > 100MB that you'll query repeatedly
+- When you often need only some columns
+
+**When NOT to use**
+- Need human-readable (use CSV)
+- Streaming writes (use database or Avro)
+- Small files < 10MB (overhead not worth it)
+
+**How to Use**
+```python
+import polars as pl
+
+# Write
+df.write_parquet("data.parquet")
+
+# Read (lazy = fast, only loads what query needs)
+result = (
+    pl.scan_parquet("data.parquet")
+    .filter(pl.col("year") == 2024)
+    .select("name", "amount")
+    .collect()
+)
+
+# Query with DuckDB (no loading!)
+import duckdb
+duckdb.sql("SELECT dept, SUM(sales) FROM 'data.parquet' GROUP BY dept")
+```
+
+**Why It's Fast**
+1. Columnar: Reads only columns you need
+2. Compression: 5-10x smaller than CSV
+3. Statistics: Skips data blocks that can't match your filter
+
+One Tip
+```python
+# Use zstd compression for best size/speed balance
+df.write_parquet("data.parquet", compression="zstd")
+```

@@ -1,6 +1,151 @@
-## GraphQL
-**PROBLEM**
+## Graph Database
+**TL;DR**
+```
+Graph DB = Optimized for relationship traversal
 
+SQL:   Rows + JOINs (slow for deep relationships)
+Graph: Nodes + Edges (fast traversal at any depth)
+
+Use when: Relationships are the main query pattern
+Tool: Neo4j (dominant player)
+Query language: Cypher
+```
+**PROBLEM**
+```
+SQL Problem: "Find friends of friends of friends"
+
+SELECT DISTINCT f3.name
+FROM friendships f1
+JOIN friendships f2 ON f1.friend_id = f2.user_id
+JOIN friendships f3 ON f2.friend_id = f3.user_id
+WHERE f1.user_id = 123;
+
+→ 3 JOINs, gets worse with each level
+→ 6 degrees of separation = 6 JOINs = 💀
+
+Graph DB: "Traverse 6 levels"
+
+MATCH (me)-[:FRIEND*1..6]-(person)
+WHERE me.id = 123
+RETURN person.name
+
+→ Same speed regardless of depth
+```
+**DATA MODEL**
+- Nodes: Entities (User, Post, Product)
+- Relationships: Connections with direction and type
+- Properties: Data on both nodes and relationships
+**Neo4j (The Main Player)**
+```cypher
+// Create nodes
+CREATE (alice:User {name: "Alice", age: 28})
+CREATE (bob:User {name: "Bob", age: 32})
+CREATE (post:Post {title: "Graph DBs 101", date: "2024-01-15"})
+
+// Create relationships
+MATCH (a:User {name: "Alice"}), (b:User {name: "Bob"})
+CREATE (a)-[:FOLLOWS {since: "2023-01-01"}]->(b)
+
+MATCH (a:User {name: "Alice"}), (p:Post {title: "Graph DBs 101"})
+CREATE (a)-[:WROTE]->(p)
+```
+**Querying (Cypher Language)**
+```cypher
+// Find who Alice follows
+MATCH (alice:User {name: "Alice"})-[:FOLLOWS]->(friend)
+RETURN friend.name
+
+// Friends of friends
+MATCH (alice:User {name: "Alice"})-[:FOLLOWS*2]->(fof)
+RETURN DISTINCT fof.name
+
+// Shortest path between two users
+MATCH path = shortestPath(
+  (a:User {name: "Alice"})-[*]-(b:User {name: "Dave"})
+)
+RETURN path
+
+// Recommend friends (friends of friends I don't follow)
+MATCH (me:User {name: "Alice"})-[:FOLLOWS]->(friend)-[:FOLLOWS]->(suggestion)
+WHERE NOT (me)-[:FOLLOWS]->(suggestion) AND me <> suggestion
+RETURN suggestion.name, COUNT(*) AS mutual_friends
+ORDER BY mutual_friends DESC
+LIMIT 5
+```
+**80/20 Use Cases**
+
+| Use Case | Example | Why Graph Wins |
+|----------|---------|----------------|
+| **Social networks** | Friends, followers, mutual connections | Traversal is O(1) per hop |
+| **Recommendations** | "People also bought", "You may know" | Pattern matching is natural |
+| **Fraud detection** | Find suspicious transaction rings | Detect cycles/patterns easily |
+| **Knowledge graphs** | Wikipedia links, company hierarchies | Arbitrary relationships |
+| **Access control** | User → Role → Permission → Resource | Path-based authorization |
+## GraphQL
+```
+REST Problem:
+
+GET /users/123           → {id, name, email, address, phone, ...}
+GET /users/123/posts     → [{id, title, content, date, ...}, ...]
+GET /posts/456/comments  → [{id, text, author, ...}, ...]
+
+→ 3 round trips
+→ Over-fetching (got 20 fields, needed 3)
+→ Under-fetching (need related data, make more requests)
+```
+
+GraphQL Solution:
+```
+POST /graphql
+{
+  user(id: 123) {
+    name
+    posts(limit: 5) {
+      title
+      comments(limit: 3) {
+        text
+      }
+    }
+  }
+}
+```
+**Query(Read)**
+```
+# Get specific fields
+query {
+  user(id: "123") {
+    name
+    email
+    posts {
+      title
+      createdAt
+    }
+  }
+}
+
+# Response - exactly what you asked
+{
+  "data": {
+    "user": {
+      "name": "Alice",
+      "email": "alice@example.com",
+      "posts": [
+        { "title": "Hello World", "createdAt": "2024-01-15" }
+      ]
+    }
+  }
+}
+```
+**Mutation**
+```
+mutation {
+  createPost(input: { title: "New Post", content: "..." }) {
+    id
+    title
+    createdAt
+  }
+}
+```
 ## InfluxDB
 **PROBLEM**
 ```

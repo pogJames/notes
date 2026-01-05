@@ -10,14 +10,12 @@
 3. **The Impedance Mismatch**
 > Your Python objects and React state are nested, hierarchical structures\
 > Flattening them into normalized tables and reconstructing them with JOINs is so bad
-### Solution
-1. **Schema Flexibility** 
-> Store documents as they are, Different documents in the same collection can have different fields. Your sensor data evolves without migrations.
-2. **Horizontal Scaling**
-> Data is distributed across nodes by design. Need more capacity? Add machines. The database handles sharding automatically.
-3. **Data Model Alignment**
-> Store data the way your application uses it. If your React dashboard needs a sensor with its recent readings, store it that way—no joins required
-
+### Use Case
+1. Caching(Redis): Cache DB query results, API responses
+2. Sessions(Redis): Store user login sessions with auto-expiry
+3. Flexible schema(MongoDB): User profiles with varying fields
+4. Real-time counters(Redis): Page views, likes, online users
+5. Rate limiting(Redis): API request limits per user
 ### Core Concepts You Must Know
 1. **CAP Theorem**: You can only guarantee two of three: Consistency, Availability, Partition tolerance. Relational databases prioritize consistency. Most NoSQL systems let you choose—often favoring availability and partition tolerance, accepting "eventual consistency."
 2. **Eventual Consistency**: After an update, given enough time with no new updates, all replicas will converge to the same value. For your temperature dashboard, showing a reading that's 100ms stale is usually fine.
@@ -56,81 +54,48 @@ alerts:pending → ["sensor_42", "sensor_17"]
 - For highly connected data: social networks, recommendation engines, fraud detection\
 - Relationships are first-class citizens
 
-### Cheatsheet
+### Code Examples
+1. Caching (Most Common)
+```python
+# Before hitting database, check Redis
+cached = redis.get("user:123")
+if cached:
+    return json.loads(cached)
+
+user = db.query("SELECT * FROM users WHERE id = 123")
+redis.setex("user:123", 3600, json.dumps(user))  # Cache 1 hour
 ```
-from pymongo import MongoClient
+2. Sessions
+```python
+# Login
+redis.setex(f"session:{token}", 86400, json.dumps({"user_id": 123}))
 
-client = MongoClient("mongodb://localhost:27017")
-db = client["iot_monitoring"]
-sensors = db["sensors"]
-
-# Insert (no schema definition needed)
-sensors.insert_one({
-    "sensor_id": "TH485_001",
-    "location": "warehouse_A",
-    "readings": []
-})
-
-# Query
-sensor = sensors.find_one({"sensor_id": "TH485_001"})
-
-# Update - push to embedded array
-sensors.update_one(
-    {"sensor_id": "TH485_001"},
-    {"$push": {"readings": {"temp": 24.1, "ts": datetime.utcnow()}}}
-)
-
-# Query with conditions
-hot_sensors = sensors.find({
-    "readings.temp": {"$gt": 30},
-    "location": "warehouse_A"
-})
-
-# Aggregation pipeline (like SQL GROUP BY but more powerful)
-avg_by_location = sensors.aggregate([
-    {"$unwind": "$readings"},
-    {"$group": {
-        "_id": "$location",
-        "avg_temp": {"$avg": "$readings.temp"}
-    }}
-])
+# Check auth
+session = redis.get(f"session:{token}")
 ```
+3. Flexible Documents
+```python
+# MongoDB - each user can have different fields
+db.users.insert_one({"name": "Alice", "age": 25})
+db.users.insert_one({"name": "Bob", "company": "Acme", "skills": ["python"]})
 ```
-import redis
-import json
-
-r = redis.Redis(host='localhost', port=6379)
-
-# Cache latest reading (expires in 60s)
-r.setex(
-    "sensor:TH485_001:latest",
-    60,
-    json.dumps({"temp": 24.1, "ts": "2025-01-15T10:05:00Z"})
-)
-
-# Get it back
-latest = json.loads(r.get("sensor:TH485_001:latest"))
-
-# Pub/Sub (like your MQTT pattern!)
-# Publisher
-r.publish("sensor_updates", json.dumps({"sensor_id": "TH485_001", "temp": 24.1}))
-
-# Subscriber (in another process)
-pubsub = r.pubsub()
-pubsub.subscribe("sensor_updates")
-for message in pubsub.listen():
-    if message["type"] == "message":
-        data = json.loads(message["data"])
-        print(f"Update: {data}")
-
-# Sorted sets for time-series (scores = timestamps)
-r.zadd("sensor:TH485_001:history", {
-    json.dumps({"temp": 24.1}): 1705312800,  # Unix timestamp
-    json.dumps({"temp": 24.3}): 1705312860,
-})
-
-# Get readings from last hour
-now = time.time()
-hour_ago = now - 3600
-recent = r.zrangebyscore("sensor:TH485_001:history", hour_ago, now)
+4. Counters
+```python
+redis.incr("page:home:views")           # Increment by 1
+redis.incrby("product:123:stock", -1)   # Decrement stock
+```
+5. Rate Limiting
+```python
+def is_limited(user_id):
+    key = f"rate:{user_id}"
+    count = redis.incr(key)
+    if count == 1:
+        redis.expire(key, 60)  # 60 second window
+    return count > 100  # 100 requests per minute
+```
+### Decision Rule
+```
+Need speed + expiry?     → Redis
+Need flexible documents? → MongoDB
+Need transactions?       → SQL
 ```

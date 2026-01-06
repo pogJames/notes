@@ -1,7 +1,6 @@
 # Authentication Methods
 Authentication methods verify a user's identity before granting access to systems, applications, or resources
 ## Basic Authentication (Base64 Encoding)
-> A simple HTTP-based method where the client sends a username and password with every request
 ```mermaid
 sequenceDiagram
     participant Client
@@ -19,14 +18,8 @@ sequenceDiagram
         Server-->>Client: 401 Unauthorized<br>WWW-Authenticate: Basic
     end
 ```
-**Why Base64?**
-> It ensures the credentials can be transmitted safely over text-only protocols without special characters causing issues. However, Base64 is easily reversible (not secure on its own), so it must be used over HTTPS to prevent interception
-- **Pros**: Simple and built into HTTP
-- **Cons**: Insecure without encryption; credentials are sent repeatedly and can be decoded easily if intercepted
-- **Common use**: APIs, internal services (always with TLS/HTTPS)
-  
+
 ## Form-Based Authentication
-> The most common method for web applications. Users enter credentials (username/password) into an HTML login form, which is submitted via POST to the server
 ```mermaid
 sequenceDiagram
     participant User
@@ -46,13 +39,8 @@ sequenceDiagram
         Server-->>Browser: Login page + Error
     end
 ```
-- **Pros**: User-friendly, familiar (e.g., login pages on websites like banking or email)
-- **Cons**: Vulnerable to phishing, session hijacking, or brute-force attacks if not secured properly (e.g., no rate limiting or weak passwords)
-- **Plus**: Often combined with CAPTCHA, password policies, or redirects to HTTPS
-- **Common use**: Traditional websites and web apps
 
 ## Multi-Factor Authentication
-> Requires two or more independent factors to verify identity, adding layers beyond just a password
 ```mermaid
 sequenceDiagram
     participant User
@@ -74,18 +62,8 @@ sequenceDiagram
         Server-->>Client: Auth Failed
     end
 ```
-- Factors:
-  - Something you know (password/PIN).
-  - Something you have (phone for SMS/code, authenticator app like Google Authenticator, hardware token).
-  - Something you are (biometrics: fingerprint, face ID).
-  - Sometimes location or behavior.
-- How it works: After entering a password, a second step (e.g., app-generated code, push notification, or biometric scan) is required.
-- Pros: Dramatically increases security—even if a password is stolen, attackers need the second factor.
-- Cons: Can add friction (extra steps); some methods (e.g., SMS) are vulnerable to SIM swapping.
-- Common use: Banking, email (e.g., Google, Microsoft), corporate logins. Often mandatory for compliance (e.g., HIPAA, PCI).
 
 ## Single Sign-On
-> Allows users to authenticate once and gain access to multiple applications or services without re-entering credentials.
 ```mermaid
 sequenceDiagram
     participant User as User/Browser
@@ -106,7 +84,73 @@ sequenceDiagram
         IdP-->>User: Error
     end
 ```
-- How it works: Relies on a central Identity Provider (IdP) (e.g., Okta, Azure AD, Google). The user logs in to the IdP, which issues a token (via protocols like SAML, OAuth 2.0, or OpenID Connect). Connected apps trust this token for access.
-- Pros: Improves user experience (less password fatigue), centralizes management, and enhances security through one strong login point.
-- Cons: If the IdP is compromised, access to all linked apps is at risk (single point of failure).
-- Common use: Enterprise environments (e.g., logging into Microsoft 365 grants access to Teams, Outlook, etc.) or consumer apps (e.g., "Sign in with Google").
+  
+## OAuth
+```mermaid
+sequenceDiagram
+    participant User
+    participant Client as Client App
+    participant Auth as Authorization Server
+    participant RS as Resource Server (API)
+
+    User->>Client: Initiate login/access
+    Client->>Auth: Redirect to /authorize (code, PKCE, scopes)
+    Auth->>User: Login + Consent
+    User->>Auth: Credentials + Approve
+    Auth->>Client: Redirect with auth code
+    Client->>Auth: POST code + PKCE verifier for access/refresh token
+    Auth-->>Client: Access Token + Refresh (optional ID Token if OIDC)
+    Client->>RS: Request with Bearer Access Token
+    RS-->>Client: Protected Resource
+```
+
+## OIDC
+```mermaid
+sequenceDiagram
+    participant User
+    participant RP as Relying Party (Client)
+    participant OP as OpenID Provider
+
+    User->>RP: Access app
+    RP->>OP: Redirect to /authorize (scope=openid profile email, nonce, etc.)
+    OP->>User: Authenticate (username/pw/MFA)
+    User->>OP: Submit + Consent
+    OP->>RP: Redirect with auth code
+    RP->>OP: POST code for ID Token + Access Token
+    OP-->>RP: ID Token (JWT with user claims) + Access Token
+    RP->>RP: Validate ID Token signature/nonce/expiry
+    Note right of RP: User authenticated
+```
+
+## SAML
+```mermaid
+sequenceDiagram
+    participant User
+    participant SP as Service Provider
+    participant IdP as Identity Provider
+
+    User->>SP: Access protected resource
+    SP->>IdP: Redirect with AuthnRequest (signed XML)
+    IdP->>User: Login form (if not already authenticated)
+    User->>IdP: Credentials + MFA
+    IdP->>SP: POST SAML Assertion (signed XML with user attributes)
+    SP->>SP: Validate signature, attributes, conditions
+    SP-->>User: Grant access (session cookie)
+```
+## JWT
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Server: POST /login with credentials
+    Server->>Server: Validate creds
+    Server-->>Client: JWT (signed token)
+    Client->>Server: Subsequent requests with Authorization: Bearer <JWT>
+    Server->>Server: Verify signature, expiry, claims
+    alt Valid
+        Server-->>Client: Resource / Success
+    else Invalid
+        Server-->>Client: 401 Unauthorized
+    end
+```

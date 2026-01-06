@@ -26,6 +26,10 @@
 > Often used for APIs, microservices, or as tokens in other protocols
 
 ## Basic Authentication (Base64 Encoding)
+1. Strengths: Super simple to implement; no sessions or cookies needed.
+2. Weaknesses: Credentials sent with every request (even Base64 is not encrypted); very insecure over HTTP; no built-in logout.
+3. Opportunities: Rare use in internal APIs with HTTPS.
+4. Threats: Highly vulnerable to interception, replay attacks, and credential stuffing; deprecated in modern apps.
 ```mermaid
 sequenceDiagram
     participant Client
@@ -45,6 +49,10 @@ sequenceDiagram
 ```
 
 ## Form-Based Authentication
+1. Strengths: Familiar to users (login page); easy to customize; works with sessions/cookies.
+2. Weaknesses: Session hijacking risks (cookie theft); server-side state needed; prone to CSRF without protection.
+3. Opportunities: Still common in traditional web apps; easy to add MFA.
+4. Threats: Phishing and brute-force attacks; being replaced by token-based systems.
 ```mermaid
 sequenceDiagram
     participant User
@@ -66,6 +74,10 @@ sequenceDiagram
 ```
 
 ## Multi-Factor Authentication
+1. Strengths: Greatly improves security (something you know + have/are).
+2. Weaknesses: Adds friction for users; can be bypassed (e.g., phishing for codes).
+3. Opportunities: Essential today; integrates easily with most systems; push toward passwordless.
+4. Threats: Social engineering or SIM-swapping attacks; user resistance to extra steps.
 ```mermaid
 sequenceDiagram
     participant User
@@ -89,6 +101,10 @@ sequenceDiagram
 ```
 
 ## Single Sign-On
+1. Strengths: Huge convenience—one login for many apps; better user experience.
+2. Weaknesses: Single point of failure (if IdP compromised, all apps at risk).
+3. Opportunities: Widely adopted in enterprises and cloud services.
+4. Threats: Centralized attack target; dependency on identity provider uptime.
 ```mermaid
 sequenceDiagram
     participant User as User/Browser
@@ -111,6 +127,10 @@ sequenceDiagram
 ```
   
 ## OAuth
+1. Strengths: Secure delegated access without sharing passwords; flexible flows.
+2. Weaknesses: Complex to implement correctly; vulnerable if flows misused.
+3. Opportunities: Foundation for modern API access; evolving standards (e.g., OAuth 2.1).
+4. Threats: Token theft or misconfiguration leaks; phishing for auth codes.
 ```mermaid
 sequenceDiagram
     participant User
@@ -130,6 +150,10 @@ sequenceDiagram
 ```
 
 ## OIDC
+1. Strengths: Adds reliable authentication to OAuth; modern, mobile-friendly; great for "Login with...".
+2. Weaknesses: Still complex; relies on proper HTTPS and token handling.
+3. Opportunities: Preferred for new apps; excellent libraries and support.
+4. Threats: Growing attack surface as adoption increases; potential for ID token forgery if keys compromised.
 ```mermaid
 sequenceDiagram
     participant User
@@ -148,6 +172,10 @@ sequenceDiagram
 ```
 
 ## SAML
+1. Strengths: Robust enterprise SSO; strong security with XML signatures.
+2. Weaknesses: Verbose and complex (XML-heavy); poor for mobile/SPAs.
+3. Opportunities: Still dominant in legacy enterprise environments.
+4. Threats: Being phased out for newer apps; high setup cost drives shift to OIDC.
 ```mermaid
 sequenceDiagram
     participant User
@@ -163,6 +191,10 @@ sequenceDiagram
     SP-->>User: Grant access (session cookie)
 ```
 ## JWT
+1. Strengths: Stateless, compact, self-contained; perfect for APIs and microservices.
+2. Weaknesses: Can't easily revoke without extra systems; size can grow with claims.
+3. Opportunities: Core of modern token-based auth (used in OIDC/OAuth).
+4. Threats: Algorithm confusion attacks or weak keys; no built-in encryption for sensitive data.
 ```mermaid
 sequenceDiagram
     participant Client

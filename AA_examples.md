@@ -1,4 +1,4 @@
-https://claude.ai/public/artifacts/a7569c13-15b2-428e-936f-6c394029e52e
+# [BIG COMPANIES WORKFLOWS](https://claude.ai/public/artifacts/a7569c13-15b2-428e-936f-6c394029e52e)
 ---
 
 ## Google Flow - Detailed Breakdown

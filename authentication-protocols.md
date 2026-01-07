@@ -11,20 +11,54 @@
 > These are single-app only — you log in separately for every site/app
 
 ### Adding Security Layers
-**MFA** ~ extra layer on top of anything (password + app code, biometric, hardware key)
-> Makes stolen passwords much less useful
+**MFA** ~ adds a layer of security during login that requires users to provide more than one credential to prove their digital identity. Factors can be:
+- Something you are - like a biometric
+- Something you know - like a password
+- Something you own - like a device
 
-### Improving User Experience
-**SSO** ~ Log in once and access multiple apps/sites without re-logging in
-- OAuth 2.0 **Authorization framework** — lets an app access your data on another service without sharing your password
-> Uses access tokens (often JWTs). Secure flows with auth code + PKCE
-- OIDC **Authentication layer** built on top of OAuth 2.0 (Adds an ID token)
-> Perfect for "Sign in with Google/Apple" — gives both login (who you are) and access
-- SAML 2.0 **Authentication protocol** XML-based for enterprise SSO
-> Exchanges signed "assertions" between Identity Provider (IdP) and Service Provider (SP)
-- JWT **token** compact, signed token containing user info/claims -> Stateless - no server session needed
-> Often used for APIs, microservices, or as tokens in other protocols
+### Improving UX
+**SSO** ~ authentication mechanism that allows users to access multiple applications and websites using a single set of login credentials
+> When a user attempts to access an application, the application checks if the user has already been authenticated by the SSO solution. If the user is authenticated, they are granted access
 
+## Authentication & Authorization Standards
+### OAuth 2.0 
+**Authorization framework**, protocol that allows a user to grant a third-party web site or application access to the user’s protected resources, without necessarily revealing their long-term credentials or even their identity
+> the **client** (Application) requests access to resources controlled by the **resource owner** (End-user) and hosted by the **resource server** and is issued a different set of credentials than those of the resource owner. Instead of using the resource owner’s credentials to access protected resources, the client obtains an **access token** - a string denoting a specific scope, lifetime, and other access attributes. Access tokens are issued to third-party clients by an **authorization server** with the approval of the resource owner. Then the client uses the access token to access the protected resources hosted by the resource server
+
+### Open ID Connect (IODC)
+**Identity layer** built on top of the OAuth 2.0 framework. It allows third-party applications to verify the identity of the end-user and to obtain basic user profile information using **access tokens**
+> While OAuth 2.0 is about resource access and sharing, OIDC is about user authentication. Its purpose is to give you one login for multiple sites. Each time you need to log in to a website using OIDC, you are redirected to your OpenID site where you log in, and then taken back to the website
+
+### SAML (Security Assertion Markup Language) 
+XML-based framework for authentication and authorization between two entities without a password
+> - Exchanges signed "assertions" between Identity Provider (IdP) and Service Provider (SP)
+> - Service provider (SP) agrees to trust the identity provider to authenticate users
+> - Identity provider (IdP) authenticates users and provides to service providers an authentication assertion that indicates a user has been authenticated
+
+### JWT (JSON web token) 
+compact and self-contained way for securely transmitting information between parties as a JSON object -> access token
+> example token: header.payload.signature
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNzM2MjY1NjAwLCJleHAiOjE3MzYzNTIwMDAsInJvbGUiOiJhZG1pbiJ9.qL3XzK8fG5vY9pR2mN7jH6tW1bC4xD8uV0eA9sQ7rT`\
+> decoded:
+```bash
+# header
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+# payload
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1736265600,
+  "exp": 1736352000,
+  "role": "admin"
+}
+# signature
+a-string-secret-at-least-256-bits-long
+```
+
+# SWOT Analysis
 ## Basic Authentication (Base64 Encoding)
 1. Strengths: Super simple to implement; no sessions or cookies needed.
 2. Weaknesses: Credentials sent with every request (even Base64 is not encrypted); very insecure over HTTP; no built-in logout.

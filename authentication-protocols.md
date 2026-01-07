@@ -15,6 +15,7 @@
 
 ### Improving UX
 **SSO** ~ authentication mechanism that allows users to access multiple applications and websites using a single set of login credentials
+> For example, if you log in to a Google service such as Gmail, you are automatically authenticated to YouTube, AdSense, Google Analytics, and other Google apps. Likewise, if you log out of your Gmail or other Google apps, you are automatically logged out of all the apps; this is known as Single Logout
 - Initial Login: You sign in once to a central authentication server (an "identity provider").
 - Token Issuance: The server verifies you and issues a secure token or certificate.
 - Seamless Access: When you try to access another connected application, it uses that token to verify you, granting immediate access without asking for a password again

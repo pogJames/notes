@@ -35,3 +35,25 @@ Containers are **stateless**. If you save data to a SQLite file *inside* a conta
 | **Dev Container** | Consistency | Ensuring every dev has the same VS Code setup. |
 | **Multi-Stage** | Efficiency | Keeping production images small and secure. |
 | **Volumes** | Persistence | Saving your SQLite DB so it survives restarts. |
+
+# PLAN
+
+Phase 1: Preparation
+[ ] Create .dockerignore: Add node_modules, dist, .env, and *.log. This prevents your local junk from slowing down the build.
+
+[ ] Configure Vite: Update vite.config.js to set server: { host: true } so the container can talk to your browser.
+
+Phase 2: The Build
+[ ] Write Multi-stage Dockerfiles: Create one for /client (serving static files with Nginx) and one for /server (running the Node process).
+
+[ ] Optimize for Caching: Copy package.json and run npm install before copying your source code. This makes subsequent builds 10x faster.
+
+Phase 3: The Environment
+[ ] Setup .devcontainer: Create a devcontainer.json that references a docker-compose.yml.
+
+[ ] Port Mapping: Map port 5173 for the frontend and 3000 for the API.
+
+Phase 4: Persistence
+[ ] Configure Compose Volumes: In docker-compose.yml, mount your /server/data folder to a volume named sqlite_storage.
+
+[ ] Test Persistence: Create a user in your dashboard, stop the container (docker-compose down), start it again, and verify the user still exists.

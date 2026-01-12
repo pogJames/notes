@@ -1,3 +1,52 @@
+# Software
+
+## 1. Determinism and RTOS (Real-Time Operating Systems)
+
+In consumer software (like Windows or Android), the OS decides when to run tasks based on "fairness." In industrial software, we use an **RTOS** (like FreeRTOS, Zephyr, or QNX).
+
+* **Determinism:** This is the guarantee that a specific action will happen within a strictly defined time limit.
+* **Preemption:** An RTOS allows a high-priority task (like "Emergency Stop") to instantly kick a lower-priority task (like "Update Screen") off the CPU.
+* **The 20% Skill:** Learning how to manage **Semaphores** and **Mutexes** so that two tasks don't try to use the same SoM component (like the I2C bus) at the exact same time, which causes "Priority Inversion" and system hangs.
+
+
+## 2. Fault Tolerance and Self-Healing
+
+Industrial software assumes that things **will** go wrong (memory corruption, bit-flips from radiation, or power brownouts).
+
+* **Watchdog Timers (WDT):** This is a physical "countdown" chip. The software must "kick" the watchdog regularly to prove it is still alive. If the code freezes, the watchdog reaches zero and hard-resets the entire system automatically.
+* **ECC (Error Correction Code) Memory:** Industrial software is often written to take advantage of ECC RAM (found in high-end SoMs), which can detect and fix "bit-flips" caused by electrical noise.
+* **Read-Only File Systems:** To prevent the OS from being corrupted if the power is pulled suddenly, industrial Linux builds (like Yocto) often run the core OS as "Read-Only," keeping user data in a separate, protected partition.
+
+
+## 3. Communication Reliability: The Industrial Stack
+
+Industrial software rarely uses raw TCP/IP or simple serial strings. It uses protocols designed to survive "packet loss" and electrical interference.
+
+* **Modbus/Profinet/EtherCAT:** These protocols include heavy error-checking (CRC) and "heartbeats." If a cable is unplugged, the software knows within milliseconds and enters a "Safe State."
+* **MQTT with QoS (Quality of Service):** For IoT-based industrial systems, software must use "Guaranteed Delivery" settings so that data isn't lost if the Wi-Fi or Cellular signal drops momentarily.
+
+
+## 4. Secure Boot and Over-the-Air (OTA) Updates
+
+In a factory, you cannot simply plug in a keyboard to fix a bug.
+
+* **Secure Boot:** The SoM checks a "digital signature" on the code before running it. This prevents hackers from replacing your industrial controller's software with malicious code.
+* **A/B Partitioning:** This is a vital design choice. You have two copies of the software (Slot A and Slot B). When you update the device, you write to Slot B. If the update fails or the power cuts out mid-way, the system simply reboots back into the working Slot A. **It never "bricks."**
+
+
+### Comparison: Hobbyist vs. Industrial Software
+
+| Feature | Hobbyist/Consumer Software | Industrial Software |
+| --- | --- | --- |
+| **Failure Handling** | "Turn it off and on again" | Watchdog Timers & Auto-Recovery |
+| **Timing** | "As fast as possible" | "Exactly every 10ms" (Deterministic) |
+| **Updates** | Manual / Risk of "Bricking" | Atomic A/B Updates |
+| **Memory** | Dynamic (`malloc`) | Static Allocation (Pre-defined) |
+
+---
+
+# Hardware
+
 ## 1. Thermal Resilience: Beyond 0°C to 70°C
 
 The most immediate difference is the **Operating Temperature Range**. Commercial chips often fail or "throttle" (slow down) once they hit 40°C–50°C.

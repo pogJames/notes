@@ -29,7 +29,18 @@ Components don't just "talk"; they follow strict rules. You only need to master 
 * **ADC (Analog-to-Digital Converter):** Translates real-world voltages (like a sensor) into numbers the MCU understands.
 * **PWM (Pulse Width Modulation):** Mimics "analog" output to dim LEDs or control motor speeds.
 
----
+### Others
+
+1. Power Management
+> Voltage regulators, power supply circuits, and sometimes battery management systems. Many embedded systems run on 3.3V or 5V logic levels.
+2. Sensors and Actuators
+> Sensors gather environmental data (temperature, pressure, motion). Actuators control physical outputs (motors, relays, LEDs).
+3. Clock/Oscillator
+> Provides timing signals. Can be internal crystal oscillators or external clock sources, typically ranging from kHz to hundreds of MHz.
+4. Communication Modules
+> WiFi, Bluetooth, Ethernet, LoRa, or cellular modules for networked embedded systems (IoT devices).
+5. Real-Time Operating System (RTOS) (optional)
+> For complex systems requiring task scheduling and resource management, like FreeRTOS or Zephyr.
 
 # 2. How They Work Together: The Lifecycle of a Data Point
 
@@ -41,7 +52,6 @@ Imagine a "Smart Thermostat" project. Here is the collaboration:
 4. **Communication:** The MCU might send the current status to a screen via **SPI**.
 5. **Output:** If it's too cold, the MCU sends a **GPIO** signal to a **Relay (Actuator)** to kick on the heater.
 
----
 
 ## 3. The "Hidden 20%": Knowledge for Professional Work
 
@@ -61,13 +71,3 @@ To move from "it works on my desk" to "it works in the field," you need this spe
 
 * **The Logic Analyzer:** This tool lets you "see" the 1s and 0s moving across wires. It is 10x more useful than a multimeter for communication issues.
 * **Static Memory:** Professionals avoid `malloc()` or dynamic memory. We define memory sizes at "compile-time" to prevent the system from crashing due to "memory leaks" months later.
-
----
-
-## Summary Table: The 80/20 Snapshot
-
-| Category | The 80% (What to focus on) | The 20% (What makes it professional) |
-| --- | --- | --- |
-| **Code** | C/C++, Loops, If/Else | Bit Manipulation, Volatile keywords, ISRs |
-| **Hardware** | MCUs, Sensors, LEDs | Decoupling Capacitors, Level Shifting |
-| **Comm.** | Sending data via UART/I2C | Handling Noise, CRC Checksums, Timeouts |

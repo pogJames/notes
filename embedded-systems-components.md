@@ -1,12 +1,19 @@
-# 1. The Core 20%: The Components You'll Use 80% of the Time
+# 1. Core Components
 
 Most embedded projects follow a "Sense → Process → Act" loop. These are the components that make it happen:
 
-### The Brain: The Microcontroller (MCU)
+### The Brain
 
-Unlike a PC processor, an MCU integrates the CPU, Memory (RAM/Flash), and Peripherals (I/O) onto a single chip.
-
-* **Common Choices:** STM32 (ARM Cortex), ESP32 (Wi-Fi/BT enabled), or AVR (Arduino-style).
+1. MCU (Microcontroller Unit)
+> A single small chip that contains CPU, RAM, flash memory, and lots of built-in peripherals (timers, ADC, PWM, UART, etc.) designed for real-time control, low power, and deterministic behavior.
+2. MPU (Microprocessor Unit)
+> Just a fast CPU core (plus cache) with no built-in memory or peripherals — it needs external RAM, flash, and support chips to become a working system (rarely used standalone today).
+3. SoC (System on Chip)
+> A highly integrated single chip that combines powerful application CPU(s), GPU, memory controller, video engines, high-speed interfaces (USB, PCIe, HDMI), and often some real-time cores — basically a complete powerful computer on one die.
+4. SoM (System on Module)
+> A small ready-made board that takes a difficult-to-use SoC (plus soldered RAM, flash, power management) and brings all the tricky high-speed signals out to one big connector so you can easily plug it into your own simpler carrier board.
+5. SBC (Single Board Computer)
+> A complete, ready-to-use computer board (usually based on an SoC) with all connectors (HDMI, USB, Ethernet, GPIO, etc.) already available — you just add power and it works like a tiny desktop (e.g. Raspberry Pi).
 
 ### The Nervous System: Communication Protocols
 

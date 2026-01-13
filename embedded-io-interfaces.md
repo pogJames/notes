@@ -1,7 +1,5 @@
 ## 1. Low-Speed "Control" Interfaces
 
-These handle 80% of your sensor and module configuration.
-
 | Interface | Software Role | Key Config Parameters | Common "Software" Bug |
 | --- | --- | --- | --- |
 | **UART** | Serial terminal, GPS, Modems. | Baud Rate, Parity, Stop Bits. | **Buffer Overrun:** CPU doesn't read the FIFO fast enough, losing bytes. |
@@ -12,7 +10,7 @@ These handle 80% of your sensor and module configuration.
 
 ## 2. High-Speed "Data" Interfaces
 
-These move large payloads. Your job here is usually managing **DMA** and **Memory Buffers**.
+**DMA** and **Memory Buffers**.
 
 | Interface | Software Role | Software "Vital 20%" | The "What" |
 | --- | --- | --- | --- |
@@ -25,7 +23,7 @@ These move large payloads. Your job here is usually managing **DMA** and **Memor
 
 ## 3. Multimedia Interfaces (MIPI)
 
-This is where you spend your time in the **Linux Device Tree** and **V4L2 (Video for Linux)** framework.
+**Linux Device Tree** and **V4L2 (Video for Linux)** framework.
 
 | Interface | Software Role | Crucial Software Info |
 | --- | --- | --- |

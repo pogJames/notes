@@ -36,6 +36,24 @@ Containers are **stateless**. If you save data to a SQLite file *inside* a conta
 | **Multi-Stage** | Efficiency | Keeping production images small and secure. |
 | **Volumes** | Persistence | Saving your SQLite DB so it survives restarts. |
 
+
+## Comparisons
+
+| Feature | Dockerfile | devcontainer.json |
+| --- | --- | --- |
+| **Focus** | **System Level:** OS, compilers, environment variables, system packages. | **IDE Level:** Editor settings, extensions, UI preferences, lifecycle hooks. |
+| **Scope** | Generic to any Docker runner. | Specific to VS Code (or tools following the Dev Container spec). |
+| **Automation** | Installs things like `git`, `python`, or `gcc`. | Installs extensions like `ESLint`, sets the theme, or runs a "welcome" script. |
+| **Portability** | Used for Dev, CI, and Production. | Used only for Development. |
+
+| Feature | Multi-Stage Build | Mounting Drives (Volumes/Bind Mounts) |
+| --- | --- | --- |
+| **Primary Goal** | Creating a tiny, secure, self-contained **Production Image**. | Connecting the container to **Host Files** (source code) or **Persistent Data** (databases). |
+| **Data Location** | Files are **inside** the image layers. | Files stay **outside** on your laptop or server. |
+| **Best For** | Compiling code and stripping out build tools. | "Hot reloading" code during dev or saving database data. |
+| **Portability** | High: The image works exactly the same on any machine. | Low: Requires specific folders to exist on the host machine. |
+| **Performance** | Fast: Files are read directly from the container's local disk. | Slightly slower: There is an I/O overhead between the host and container. |
+
 # PLAN
 
 Phase 1: Preparation

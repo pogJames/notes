@@ -66,21 +66,21 @@ docker run -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://localhos
 
 ---
 
-### 5. Common "Fails" for your Dashboard
+last session:
 
-Because of the architecture we discussed, ZAP will likely complain about:
-
-1. **Missing Secure/HttpOnly flags:** If you haven't enabled HTTPS yet.
-2. **Information Disclosure:** If your Express errors show "Stack Traces."
-3. **CORS Misconfiguration:** If your CORS policy is too wide (`origin: '*'`).
-
-### Summary Checklist
-
-| Step | Action | Why? |
-| --- | --- | --- |
-| **Proxy** | Manual Explore | To record the "happy path" of your app. |
-| **Auth** | Flag JWT/Cookie | So ZAP can scan routes behind the `requireAuth` wall. |
-| **Spider** | Run Spider | To find hidden files or folders you forgot about. |
-| **Active Scan** | Run Active Scan | To simulate actual attacks (SQLi, XSS). |
-
-**Would you like me to help you fix a specific "High" or "Medium" alert that ZAP found, or should we look at how to automate this scan every time you push code?**
+Content Security Policy (CSP) Header Not Set
+Cross-Domain Misconfiguration
+Information Disclosure - JWT in Browser localStorage
+Missing Anti-clickjacking Header
+Sub Resource Integrity Attribute Missing
+Cookie No HttpOnly Flag
+Cookie Without Secure Flag
+Cookie with SameSite Attribute None
+Cookie without SameSite Attribute
+Cross-Domain JavaScript Source File Inclusion
+Private IP Disclosure
+Server Leaks Version Information via "Server" HTTP Response Header Field
+Strict-Transport-Security Disabled
+Strict-Transport-Security Header Not Set
+Timestamp Disclosure - Unix
+X-Content-Type-Options Header Missing

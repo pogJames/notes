@@ -12,3 +12,4 @@
 > [!NOTE]
 > you might need to add user to dialout group for read/write permissions:\
 > `sudo usermod -a -G dialout <USER>`, then close and reopen WSL
+7. set modbus port latency to 1 ms

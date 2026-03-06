@@ -38,4 +38,19 @@ $ cargo run
 
 ## Collections
 
-## Macros
+## Profiling
+```bash
+### 1. Install perf                                                                                                                  
+sudo apt install linux-tools-generic                                                                                             
+sudo ln -sf $(ls /usr/lib/linux-tools/*/perf | head -1) /usr/local/bin/perf                                                        
+                                                                                                                                 
+### 2. Verify it works (ignore the kernel version warning)                                                                           
+sudo perf stat ls                                                                                                                  
+
+### 3. Build release binary
+cargo build --release
+
+### 4. Run perf stat against the app
+sudo perf stat ./target/release/modbus-stream --device /dev/ttyUSB0
+# Let it run 10–20 seconds, then Ctrl+C
+```

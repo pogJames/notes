@@ -13,3 +13,8 @@
 > you might need to add user to dialout group for read/write permissions:\
 > `sudo usermod -a -G dialout <USER>`, then close and reopen WSL
 7. set port latency to 1 ms `echo 1 | sudo tee /sys/bus/usb-serial/devices/ttyUSB0/latency_timer`
+
+### Start All Services
+```bash
+/etc/init.d/main-app.sh start && /etc/init.d/device_data_recv.sh start && /etc/init.d/modbus_broker.sh start && /etc/init.d/dc-app.sh start && /etc/init.d/device-etl.sh start && /etc/init.d/device_center.sh start && /etc/init.d/web.sh start
+```

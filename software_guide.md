@@ -42,7 +42,7 @@ Password: root
 root@matrix800:~#
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > Matrix 800 Default Credentials:
 > | Account | Username | Password |
 > |---------|----------|----------|
@@ -205,7 +205,9 @@ Use standard Linux tools (stty, pyserial, etc.) to configure baud rate, parity, 
 
 ### MicroSD Card
 
-The Matrix-800 includes a built-in microSD card slot for optional storage expansion. The system detects inserted cards automatically.
+The Matrix-800 includes a built-in microSD card slot for optional storage expansion. 
+> [!NOTE]
+> The system detects inserted cards automatically.
 
 **Check for the SD card device after insertion:**
 ```

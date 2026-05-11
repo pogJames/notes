@@ -261,6 +261,3 @@ apt update                # Refresh the package index
 apt upgrade               # Upgrade all installed packages
 apt full-upgrade          # Upgrade with automatic dependency handling
 ```
-```
-root@matrix800:~# umount /media/
-```  

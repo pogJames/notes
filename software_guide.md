@@ -68,12 +68,59 @@ root@matrix800:~# ip a show end1   # LAN2
  
 ### Changing Network Settings
  
-Network configuration is managed via Netplan. Edit the YAML file, validate, then apply:
- 
+Network configuration is managed via Netplan. Step-by-step on how to change the network settings:
+
+**1.  Modify Configuration**
 ```
 root@matrix800:~# vi /etc/netplan/00-installer-config.yaml   # Modify Configuration
-root@matrix800:~# netplan generate                           # Validate configuration
-root@matrix800:~# netplan apply                              # Apply changes
+```
+Default YAML configuration file:
+```
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    end0:
+      dhcp4: true
+
+    end1:
+      dhcp4: false
+      addresses:
+        - 192.168.2.127/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+```
+Set a fixed address for end0:
+```
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    end0:
+      dhcp4: false
+      addresses:
+        - <new address>/24
+      routes:
+        - to: default
+          via: <gateway address>
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+
+    end1:
+      dhcp4: false
+      addresses:
+        - 192.168.2.127/24
+```
+**2. Validate configuration**
+```
+root@matrix800:~# netplan generate
+```
+**3. Apply changes**
+```
+root@matrix800:~# netplan apply
 ```
 
 
@@ -139,7 +186,7 @@ System clock synchronized: no
 ### Sync Automatically with NTP (Default)
 
 ```
-timedatectl set-ntp yes
+root@matrix800:~# timedatectl set-ntp yes
 ```
 
 ### Set Time Manually
@@ -171,6 +218,24 @@ Inspect the full GPIO configuration at any time:
 
 ```
 root@matrix800:~# gpioinfo gpiochip4 gpiochip5
+gpiochip4 - 8 lines:
+        line   0: "IOEXP1_INT"       unused   input  active-high
+        line   1: "IOEXP2_INT"       unused   input  active-high
+        line   2:  "IOEXP_RST"      "reset"  output   active-low [used]
+        line   3: "USB_HUB_RST" "reset" output active-low [used]
+        line   4:         "DO"       unused   input  active-high
+        line   5:        "DI1"       unused   input  active-high
+        line   6:      unnamed  "ready-led"  output  active-high [used]
+        line   7:      unnamed   "user-led"  output  active-high [used]
+gpiochip5 - 8 lines:
+        line   0:   "GPIO-B-0"       unused   input  active-high
+        line   1:   "GPIO-B-1"       unused   input  active-high
+        line   2:   "GPIO-B-2"       unused   input  active-high
+        line   3:   "GPIO-B-3"       unused   input  active-high
+        line   4:   "GPIO-B-4"       unused   input  active-high
+        line   5:        "DI2"       unused   input  active-high
+        line   6:    "TPM_IRQ"       unused   input  active-high
+        line   7:   "GPIO-B-7"       unused   input  active-high
 ```
 
 ### Reading Digital Inputs
@@ -201,40 +266,7 @@ The Matrix-800 comes with four RS-485 serial ports supporting baud rates up to *
 Use standard Linux tools (stty, pyserial, etc.) to configure baud rate, parity, stop bits, etc.
 
 
-## 7. Storage
-
-### MicroSD Card
-
-The Matrix-800 includes a built-in microSD card slot for optional storage expansion. 
-> [!NOTE]
-> The system detects inserted cards automatically.
-
-**Check for the SD card device after insertion:**
-```
-root@matrix800:~# lsblk
-NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
-mmcblk0      179:0    0 14.7G  0 disk
-├─mmcblk0p1  179:1    0    2G  0 part
-└─mmcblk0p2  179:2    0 12.7G  0 part /
-mmcblk0boot0 179:32   0    4M  1 disk
-mmcblk0boot1 179:64   0    4M  1 disk
-mmcblk1      179:24   0  7.3G  0 disk   <<<<<<<<<< THIS
-└─mmcblk1p1  179:25   0  7.3G  0 part   <<<<<<<<<< THIS
-```  
- 
-**Mount the SD card:**
-
-```
-root@matrix800:~# mount /dev/mmcblk1p1 /media/
-```
-
-**Unmount before removal:**
-
-```
-root@matrix752:~# umount /media/
-```
-
-## 8. Software Package Management
+## 7. Software Package Management
 The Matrix-800 runs **Ubuntu 24.04 LTS** and uses APT for package management. 
 > [!NOTE]
 > Most commands require root privileges.
@@ -256,10 +288,42 @@ apt show <package>        # Show detailed package information
 apt list --installed      # List all currently installed packages
 ```
  
-### Updating the System
+### Updating and Upgrading Packages
  
 ```
 apt update                # Refresh the package index
 apt upgrade               # Upgrade all installed packages
 apt full-upgrade          # Upgrade with automatic dependency handling
+```
+
+
+## 8. Using SD Card
+
+The Matrix-800 includes a built-in microSD card slot for optional storage expansion. 
+> [!NOTE]
+> The system detects inserted cards automatically.
+
+**Check for the SD card device after insertion:**
+```
+root@matrix800:~# lsblk
+NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+mmcblk0      179:0    0 14.7G  0 disk
+├─mmcblk0p1  179:1    0    2G  0 part
+└─mmcblk0p2  179:2    0 12.7G  0 part /
+mmcblk0boot0 179:32   0    4M  1 disk
+mmcblk0boot1 179:64   0    4M  1 disk
+mmcblk1      179:24   0  7.3G  0 disk <<<<<<<<<< THIS
+└─mmcblk1p1  179:25   0  7.3G  0 part <<<<<<<<<< THIS
+```  
+ 
+**Mount the SD card:**
+
+```
+root@matrix800:~# mount /dev/mmcblk1p1 /media/
+```
+
+**Unmount before removal:**
+
+```
+root@matrix752:~# umount /media/
 ```
